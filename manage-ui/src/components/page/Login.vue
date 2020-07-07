@@ -1,7 +1,7 @@
 <template>
     <div class="login-wrap">
         <div class="ms-login">
-            <div class="ms-title">后台管理系统</div>
+            <div class="ms-title">营销管理系统</div>
             <el-form :model="param" :rules="rules" ref="login" label-width="0px" class="ms-content">
                 <el-form-item prop="username">
                     <el-input v-model="param.username" placeholder="username">
@@ -44,7 +44,7 @@ export default {
         submitForm() {
             this.$refs.login.validate(valid => {
                 if (valid) {
-                    console.log("ok");
+                    console.log("ok" + this.param.username);
 
                     this.$message.success('登录成功');
                     localStorage.setItem('ms_username', this.param.username);
@@ -73,7 +73,7 @@ export default {
     line-height: 50px;
     text-align: center;
     font-size: 20px;
-    color: #fff;
+    color: rgb(36, 33, 33);
     border-bottom: 1px solid #ddd;
 }
 .ms-login {

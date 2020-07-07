@@ -15,7 +15,8 @@ import (
 
 //ServerYaml 服务配置
 type ServerYaml struct {
-	Port int `yaml:"port"`
+	Port    int  `yaml:"port"`
+	Release bool `yaml:"release"`
 }
 
 func loadServerConf(serverConf *ServerYaml) {
@@ -31,8 +32,11 @@ func loadServerConf(serverConf *ServerYaml) {
 }
 
 func main() {
+	if serverConf.Release {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	// 创建一个不包含中间件的路由器
-	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
 
 	// 全局中间件

@@ -21,7 +21,11 @@ service.interceptors.response.use(
     response => {
         if (response.status === 200) {
             return response.data;
-        } else {
+        } else if(response.status === 401){
+            console.log('未认证')
+        } else if(response.status === 403){
+            console.log('拒绝请求')
+        }else {
             Promise.reject();
         }
     },
