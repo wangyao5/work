@@ -1,4 +1,5 @@
 import axios from 'axios';
+import router from '../router';
 
 const service = axios.create({
     // process.env.NODE_ENV === 'development' 来判断是否开发环境
@@ -22,9 +23,9 @@ service.interceptors.response.use(
         if (response.status === 200) {
             return response.data;
         } else if(response.status === 401){
-            console.log('未认证')
+            router.push('/login');
         } else if(response.status === 403){
-            console.log('拒绝请求')
+            router.push('/403');
         }else {
             Promise.reject();
         }
