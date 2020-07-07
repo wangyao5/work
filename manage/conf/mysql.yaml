@@ -1,0 +1,4 @@
+mysql-url: root:123456@(127.0.0.1:3306)/crm?charset=utf8&parseTime=True&loc=Local
+logable: True
+max-idle-conns: 100
+max-open-conns: 100
