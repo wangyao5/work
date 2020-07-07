@@ -65,7 +65,7 @@ func init() {
 	roles = append(roles, RoleModel{ID: 2, RoleName: "推广员", RoleType: 2, Remark: "推广员角色", Status: 1})
 	rtx := db.Begin()
 	for _, role := range roles {
-		if !db.NewRecord(&role) {
+		if db.NewRecord(role) {
 			rtx.Create(&role)
 		}
 	}
@@ -78,7 +78,7 @@ func init() {
 	newPasswd := util.MD5(passwd + slat)
 	admin := UserModel{ID: 1, Username: username, Password: newPasswd, Salt: slat,
 		RealName: "系统管理员", Mobile: "18519272342", Email: "82486240@qq.com", Gender: 1, Status: 1, Role: 1}
-	if !db.NewRecord(&admin) {
+	if db.NewRecord(admin) {
 		atx := db.Begin()
 		atx.Create(&admin)
 		atx.Commit()

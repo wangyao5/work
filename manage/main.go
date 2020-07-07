@@ -6,10 +6,10 @@ import (
 	"log"
 	"manage/marketing"
 	"manage/middle"
+	"manage/security"
+	_ "manage/security"
 	"os"
 	"path/filepath"
-
-	_ "manage/security"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v2"
@@ -51,8 +51,10 @@ func main() {
 	// 配置跨域中间件
 	engine.Use(middle.Cors())
 
-	engine.PUT("/clue", marketing.ClueAPI{}.PutClue)
-	engine.GET("/clue/xlsx", marketing.ClueAPI{}.GetClue)
+	engine.PUT("/marketing/clue", marketing.ClueAPI{}.PutClue)
+	engine.GET("/marketing/clue/xlsx", marketing.ClueAPI{}.GetClue)
+
+	engine.POST("/security/login", security.Security{}.Login)
 
 	engine.Run(fmt.Sprintf(":%d", serverConf.Port))
 }

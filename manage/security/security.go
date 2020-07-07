@@ -1,6 +1,7 @@
 package security
 
 import (
+	"fmt"
 	"manage/util"
 	"net/http"
 
@@ -9,21 +10,34 @@ import (
 
 //Security 权限控制模块.
 type Security struct {
-	userModel *UserModel
 }
 
 //Login 账户登陆.
-func (s *Security) Login(ctx *gin.Context) {
+func (Security) Login(ctx *gin.Context) {
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("passwd")
-	userModel := s.userModel.FindOne()
+	userModel := UserModel{}.FindOne(username)
 	if userModel.Username == username && userModel.Status == 1 {
 		if util.MD5(password+userModel.Salt) == userModel.Password {
-
+			claims := Claims{}
+			accessToken, accessTokenErr := CreateAccessToken(claims)
+			refreshToken, refreshTokenErr := CreateAccessToken(claims)
+			if accessTokenErr == nil && refreshTokenErr == nil {
+				ctx.JSON(http.StatusOK, gin.H{
+					"accessToken":  accessToken,
+					"refreshToken": refreshToken,
+				})
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": fmt.Sprintf("%#v\n%#v", accessTokenErr, refreshTokenErr),
+			})
 		}
-		return
+	} else {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"msg": fmt.Sprintf("username: %s not found", username),
+		})
 	}
-	ctx.JSON(http.StatusOK, gin.H{})
 }
 
 //Register 注册商户.
