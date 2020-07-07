@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
+	_ "manage/security"
+
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v2"
 )
@@ -32,6 +34,8 @@ func loadServerConf(serverConf *ServerYaml) {
 }
 
 func main() {
+	serverConf := new(ServerYaml)
+	loadServerConf(serverConf)
 	if serverConf.Release {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -50,7 +54,5 @@ func main() {
 	engine.PUT("/clue", marketing.ClueAPI{}.PutClue)
 	engine.GET("/clue/xlsx", marketing.ClueAPI{}.GetClue)
 
-	serverConf := new(ServerYaml)
-	loadServerConf(serverConf)
 	engine.Run(fmt.Sprintf(":%d", serverConf.Port))
 }

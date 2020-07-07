@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/mysql" //mysql driver
 	"gopkg.in/yaml.v2"
 )
 
