@@ -1,7 +1,8 @@
 package security
 
 import (
-	"time"
+	"fmt"
+	"log"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -11,22 +12,60 @@ const refreshTokenSignedString string = "secret"
 
 // Claims custom token
 type Claims struct {
-	API  string `json:"api,omitempty"`  // API接口
-	Menu string `json:"menu,omitempty"` // 菜单权限
+	UID string `json:"uid,omitempty"` //UID
+	API string `json:"api,omitempty"` // API接口
 	jwt.StandardClaims
 }
 
 //CreateAccessToken 创建自定义Token.
-func CreateAccessToken(claims Claims) (string, error) {
-	claims.ExpiresAt = time.Now().Add(time.Minute * 60).Unix()
+func CreateAccessToken(claims Claims, expiresAt int64) (string, error) {
+	claims.ExpiresAt = expiresAt
 	claimToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return claimToken.SignedString([]byte(accessTokenSignedString))
 }
 
 //CreateRefreshToken 创建refresh Token.
-func CreateRefreshToken() (string, error) {
-	claims := Claims{}
-	claims.ExpiresAt = time.Now().Add(time.Hour * 24).Unix()
+func CreateRefreshToken(claims Claims, expiresAt int64) (string, error) {
+	claims.ExpiresAt = expiresAt
 	claimToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return claimToken.SignedString([]byte(refreshTokenSignedString))
+}
+
+//ValidateAccessToken 验证Token是否有效
+func ValidateAccessToken(accessToken string) (claims *Claims, ok bool) {
+	token, err := jwt.ParseWithClaims(accessToken, new(Claims),
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected login method %v", token.Header["alg"])
+			}
+			return []byte(accessTokenSignedString), nil
+		})
+	if err != nil {
+		log.Fatal(err)
+	}
+	claims, ok = token.Claims.(*Claims)
+	if !token.Valid {
+		ok = false
+	}
+	return
+}
+
+//ValidateRefreshToken 验证Token是否有效
+func ValidateRefreshToken(refreshToken string) (claims *Claims, ok bool) {
+	token, err := jwt.ParseWithClaims(refreshToken, new(Claims),
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected login method %v", token.Header["alg"])
+			}
+			return []byte(refreshTokenSignedString), nil
+		})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	claims, ok = token.Claims.(*Claims)
+	if !token.Valid {
+		ok = false
+	}
+	return
 }

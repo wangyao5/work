@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"manage/util"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,13 +20,18 @@ func (Security) Login(ctx *gin.Context) {
 	userModel := UserModel{}.FindOne(username)
 	if userModel.Username == username && userModel.Status == 1 {
 		if util.MD5(password+userModel.Salt) == userModel.Password {
-			claims := Claims{}
-			accessToken, accessTokenErr := CreateAccessToken(claims)
-			refreshToken, refreshTokenErr := CreateAccessToken(claims)
+			//查询API接口
+			claims := Claims{UID: username}
+			accessTokenExpireTime := time.Minute * 60
+			accessToken, accessTokenErr := CreateAccessToken(claims, time.Now().Add(accessTokenExpireTime).Unix())
+			refreshTokenExpireTime := time.Hour * 24
+			refreshToken, refreshTokenErr := CreateRefreshToken(claims, time.Now().Add(refreshTokenExpireTime).Unix())
 			if accessTokenErr == nil && refreshTokenErr == nil {
 				ctx.JSON(http.StatusOK, gin.H{
-					"accessToken":  accessToken,
-					"refreshToken": refreshToken,
+					"access-token":          accessToken,
+					"access-token-expired":  accessTokenExpireTime.Seconds(),
+					"refresh-token":         refreshToken,
+					"refresh-token-expired": refreshTokenExpireTime.Seconds(),
 				})
 				return
 			}
@@ -40,12 +46,10 @@ func (Security) Login(ctx *gin.Context) {
 	}
 }
 
-//Register 注册商户.
-func (Security) Register(ctx *gin.Context) {
+//RefreshToken 刷新Token
+func (Security) RefreshToken(ctx *gin.Context) {
+	refreshToken := ctx.PostForm("refresh-token")
+	if claims, ok := ValidateRefreshToken(refreshToken); ok {
 
-}
-
-//ResetPwd 重置商户密码
-func (Security) ResetPwd(ctx *gin.Context) {
-
+	}
 }

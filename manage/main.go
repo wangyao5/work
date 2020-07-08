@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"manage/filter"
 	"manage/marketing"
-	"manage/middle"
 	"manage/security"
-	_ "manage/security"
 	"os"
 	"path/filepath"
 
@@ -41,20 +40,26 @@ func main() {
 	}
 
 	// 创建一个不包含中间件的路由器
-	engine := gin.New()
+	router := gin.New()
 
 	// 全局中间件
 	// 使用 Logger 中间件
-	engine.Use(gin.Logger())
+	router.Use(gin.Logger())
 	// 使用 Recovery 中间件
-	engine.Use(gin.Recovery())
+	router.Use(gin.Recovery())
 	// 配置跨域中间件
-	engine.Use(middle.Cors())
+	router.Use(filter.Cors())
+	public := router.Group("/public")
+	{
+		public.PUT("/marketing/clue", marketing.ClueAPI{}.PutClue)
+		public.POST("/login", security.Security{}.Login)
+	}
 
-	engine.PUT("/marketing/clue", marketing.ClueAPI{}.PutClue)
-	engine.GET("/marketing/clue/xlsx", marketing.ClueAPI{}.GetClue)
-
-	engine.POST("/security/login", security.Security{}.Login)
-
-	engine.Run(fmt.Sprintf(":%d", serverConf.Port))
+	security := router.Group("/security")
+	security.Use(filter.Authorization())
+	{
+		security.GET("/marketing/clue/xlsx", marketing.ClueAPI{}.GetClue)
+	}
+	// router.POST("/security/valid", security.Security{}.RefreshToken)
+	router.Run(fmt.Sprintf(":%d", serverConf.Port))
 }
